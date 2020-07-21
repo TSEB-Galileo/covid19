@@ -42,4 +42,4 @@ def estimate_r(df, config=None, method='parametric_si'):
         epiestim_result = epiestim.estimate_R(df,
                                               method=method,
                                               config=config)
-        return pandas2ri.ri2py(epiestim_result[0])
+        return epiestim_result[0]
