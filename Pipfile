@@ -13,6 +13,7 @@ matplotlib = "*"
 pytz = "*"
 rpy2 = "*"
 scipy = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.7"

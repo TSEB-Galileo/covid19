@@ -14,6 +14,7 @@ def load_data(fpath):
         return pd.to_datetime('{}/2020 12:00:00'.format(txt[-5:].replace('_',
                                                                          '/')),
                               dayfirst=True)
+
     dates = pd.Index(map(to_date, df_tmp.columns))
     new_index = pd.date_range(start=dates[-1] - np.timedelta64(1, 'D'),
                               end=dates[0], freq='1D')
@@ -62,14 +63,14 @@ def get_state(full_df, state):
     state_df['deaths'].values[0] = first
 
     idx = (work_df['state'] == state) & \
-        (work_df['city'] == 'Importados/Indefinidos')
+          (work_df['city'] == 'Importados/Indefinidos')
     imported_df = work_df[idx]['confirmed']
 
     state_df['imported'] = imported_df
     state_df = state_df.rename(columns={'confirmed': 'local'}).fillna(0).copy()
     last_day = np.nonzero(state_df['local'].values)[0][-1]
 
-    return state_df.iloc[:last_day+1].copy()
+    return state_df.iloc[:last_day + 1].copy()
 
 
 def get_city(full_df, state, city):
@@ -98,4 +99,4 @@ def get_city(full_df, state, city):
     city_df = city_df.rename(columns={'confirmed': 'local'}).fillna(0).copy()
     last_day = np.nonzero(city_df['local'].values)[0][-1]
 
-    return city_df.iloc[:last_day+1].copy()
+    return city_df.iloc[:last_day + 1].copy()

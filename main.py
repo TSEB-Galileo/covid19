@@ -42,13 +42,13 @@ def get_brazil_dataset():
     return brazil.join(brazil_dead, how='outer').fillna(0)
 
 
-def get_dataset_brasilio(fresh=False):
-    casos = 'data/caso.csv.gz'
-    if fresh:
-        shutil.rmtree(casos, ignore_errors=True)
-    if not os.path.exists(casos):
-        download('https://data.brasil.io/dataset/covid19/caso.csv.gz', 'data/caso.csv.gz')
-    return pd.read_csv('data/casos.csv.gz')
+# def get_dataset_brasilio(fresh=False, url='https://data.brasil.io/dataset/covid19/caso_full.csv.gz'):
+#     casos = 'data/caso.csv.gz'
+#     if fresh:
+#         shutil.rmtree(casos, ignore_errors=True)
+#     if not os.path.exists(casos):
+#         download(url, 'data/caso.csv.gz')
+#     return pd.read_csv('data/casos.csv.gz')
 
 
 def get_dataset_tereos(xlsx=None):
@@ -66,6 +66,16 @@ def get_dataset_from_url(url, and_save_to_path=None):
                 os.remove(and_save_to_path)
             shutil.move(path, and_save_to_path)
         return df
+
+
+def get_dataset_alternativo():
+    # cities = pd.read_csv('https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-cities.csv')
+    # states = pd.read_csv('https://raw.githubusercontent.com/wcota/covid19br/master/cases-brazil-states.csv')
+    cities = None
+    with tempfile.TemporaryDirectory() as temp:
+        path = os.path.join(temp, 'dados.csv.gz')
+        download('https://github.com/wcota/covid19br/blob/master/cases-brazil-cities-time.csv.gz?raw=true', path)
+        cities = pd.read_csv(path)
 
 
 def plot_site(df):
@@ -109,12 +119,16 @@ def gera_graficos_para_as_cidades(dataset: DataFrame, state_cities: Dict[str, Li
             # noinspection PyBroadException
             try:
                 city_df = brasilio.get_city(dataset, state, city)
-                analyze_and_plot(city_df, base_path, state, city)
+                df = analyze_and_plot(city_df, base_path, state, city)
             except Exception:
                 print(f"Failed for {state}/{city}")
 
 
+FIRST = True
+
+
 def analyze_and_plot(model_df, base_path, state, city):
+    global FIRST
     epiestim_result = plot_site(model_df)
 
     # save the image
@@ -133,9 +147,10 @@ def analyze_and_plot(model_df, base_path, state, city):
     epiestim_result['country'] = 'Brazil'
     epiestim_result['state'] = state
     epiestim_result['city'] = city
-
-    # TODO: save results
-    # epiestim_result.to_csv(f'data/results_{state}_{city}.csv', mode='a', header=False)
+    results_csv = f"data/results_{datetime.now().strftime('%Y%m%d')}.csv"
+    epiestim_result.to_csv(results_csv, mode='a', header=FIRST, encoding='utf-8-sig', index=False)
+    FIRST = False
+    return epiestim_result
 
 
 def generate_zip():
@@ -171,6 +186,7 @@ def main():
     plt.close()
 
     # Imagens das cidades de interesse
+    # dataset_brasilio = pd.read_csv('brasilio.csv')
     dataset_brasilio = get_dataset_from_url('https://data.brasil.io/dataset/covid19/caso.csv.gz')
     gera_graficos_para_as_cidades(
         dataset_brasilio,
