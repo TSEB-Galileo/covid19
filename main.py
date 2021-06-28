@@ -15,6 +15,8 @@ from sirsaia import brasilio
 from sirsaia import epiestim
 from sirsaia import plotutils
 
+plt.switch_backend('WebAgg')
+
 
 def download(url, to_path):
     with open(to_path, 'wb') as f:
